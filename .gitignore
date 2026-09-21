@@ -1,0 +1,28 @@
+# CDK
+cdk.out/
+*.js
+!jest.config.js
+*.d.ts
+node_modules/
+
+# CDK asset staging
+.cdk.staging/
+
+# TypeScript build output
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp

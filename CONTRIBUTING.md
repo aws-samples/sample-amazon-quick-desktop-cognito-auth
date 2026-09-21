@@ -44,6 +44,17 @@ GitHub provides additional document on [forking a repository](https://help.githu
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
 
 
+## Sample validation
+
+Follow the prerequisites in [README.md](README.md), then run `npm test`,
+`npm run build`, and synthesize both the Cognito-only and Identity Center
+deployment modes. Describe the behavior changed and the validation performed
+in your pull request.
+
+Keep credentials, customer identifiers, tokens, deployment outputs and private
+support material out of issues and pull requests. Use documentation-only values
+in examples. For suspected vulnerabilities, follow [SECURITY.md](SECURITY.md).
+
 ## Code of Conduct
 This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
 For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
