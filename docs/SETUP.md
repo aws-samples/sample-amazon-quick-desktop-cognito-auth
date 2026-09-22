@@ -1,5 +1,7 @@
 # Set up Cognito and Amazon Quick Desktop
 
+Language: **English** · [한국어](SETUP.ko.md)
+
 [Repository overview](../README.md) · [Configuration reference](CONFIGURATION.md) · [Troubleshooting](../TROUBLESHOOTING.md)
 
 Follow this guide to deploy the authentication stack, connect it to Amazon Quick,

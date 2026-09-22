@@ -5,7 +5,8 @@ Quick Desktop**. This AWS CDK sample creates the Cognito user pool and the OAuth
 proxy needed to connect it to an existing Amazon Quick Enterprise account.
 Optionally, provision Cognito users from an IAM Identity Center group.
 
-**[Start here: step-by-step setup guide with screenshots →](docs/SETUP.md)**
+**Start here — step-by-step setup guide with screenshots:**
+[English](docs/SETUP.md) · [한국어](docs/SETUP.ko.md)
 
 The guide takes you from choosing a deployment mode through configuring Quick,
 registering a user, and verifying a successful Desktop sign-in and chat.
@@ -72,7 +73,7 @@ Quick accounts can be used; creating a new subscription is not part of this stac
 
 | Document | Purpose |
 | --- | --- |
-| [Setup guide](docs/SETUP.md) | Deployment, illustrated Quick configuration, user provisioning, first sign-in, and acceptance checks |
+| Setup guide: [English](docs/SETUP.md) · [한국어](docs/SETUP.ko.md) | Deployment, illustrated Quick configuration, user provisioning, first sign-in, and acceptance checks |
 | [Configuration and operations](docs/CONFIGURATION.md) | All context options, region constraints, user lifecycle, upgrades, security controls, local tests, and cleanup |
 | [Troubleshooting](TROUBLESHOOTING.md) | Diagnose deployment, provisioning, and Desktop sign-in failures |
 | [Contributing](CONTRIBUTING.md) | Development and contribution process |
