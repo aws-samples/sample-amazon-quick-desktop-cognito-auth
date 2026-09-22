@@ -21,6 +21,9 @@ venv/
 *.log
 npm-debug.log*
 
+# Local deployment outputs and administrator notes
+.local/
+
 # OS / editor
 .DS_Store
 .idea/

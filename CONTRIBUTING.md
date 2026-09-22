@@ -46,7 +46,7 @@ Looking at the existing issues is a great way to find something to contribute on
 
 ## Sample validation
 
-Follow the prerequisites in [README.md](README.md), then run `npm test`,
+Follow the [local validation prerequisites](docs/CONFIGURATION.md#local-validation), then run `npm test`,
 `npm run build`, and synthesize both the Cognito-only and Identity Center
 deployment modes. Describe the behavior changed and the validation performed
 in your pull request.

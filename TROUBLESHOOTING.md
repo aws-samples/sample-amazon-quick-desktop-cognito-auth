@@ -1,5 +1,7 @@
 # Quick Desktop sign-in: customer troubleshooting
 
+[Step-by-step setup](docs/SETUP.md) · [Configuration and operations](docs/CONFIGURATION.md)
+
 The new readiness output and structured proxy fields are available only after
 this version is deployed. Their absence on an older stack is not a failed check;
 use its existing API Gateway access logs and Desktop logs until it is upgraded.
