@@ -48,7 +48,9 @@ def member(stubber,exists=True,uid=UID):
 
 
 def describe(stubber,email='old@example.com',uid=UID):
-    stubber.add_response('describe_user',{'UserId':uid,'IdentityStoreId':STORE,'UserName':'person','Emails':[{'Value':email,'Primary':True}]},
+    stubber.add_response('describe_user',{'UserId':uid,'IdentityStoreId':STORE,
+                        'UserArn':f'arn:aws:identitystore:::user/{uid}',
+                        'Revision':'0','UserName':'person','Emails':[{'Value':email,'Primary':True}]},
                         {'IdentityStoreId':STORE,'UserId':uid})
 
 
@@ -158,7 +160,9 @@ class CoordinatorTests(unittest.TestCase):
     def managed(self,uid,username=None):return {'Username':username or uid,'Attributes':[{'Name':IDC_USER_ID_ATTR,'Value':uid}]}
     def test_existing_members_and_stale_managed_users_are_queued_but_manual_users_are_not(self):
         self.cognito([self.managed(UID,'legacy@example.com'),self.managed(THIRD),{'Username':'manual-user','Attributes':[]}])
-        self.a.add_response('list_group_memberships',{'GroupMemberships':[{'IdentityStoreId':STORE,'GroupId':GROUP,'MembershipId':SECOND,'MemberId':{'UserId':uid}} for uid in [UID,SECOND]]}, {'IdentityStoreId':STORE,'GroupId':GROUP})
+        self.a.add_response('list_group_memberships',{'GroupMemberships':[{'IdentityStoreId':STORE,'GroupId':GROUP,'MembershipId':SECOND,
+                            'MembershipArn':f'arn:aws:identitystore:::membership/{SECOND}',
+                            'MemberId':{'UserId':uid}} for uid in [UID,SECOND]]}, {'IdentityStoreId':STORE,'GroupId':GROUP})
         with patch.object(self.m._sqs,'send_message_batch',return_value={'Successful':[]}) as send:
             self.assertEqual(self.m.scan(CTX,'run'),{'queued':3})
         jobs=[json.loads(v['MessageBody']) for v in send.call_args.kwargs['Entries']]

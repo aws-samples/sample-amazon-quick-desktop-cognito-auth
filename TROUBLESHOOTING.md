@@ -52,6 +52,15 @@ Cognito's OIDC `GET /oauth2/userInfo` takes an **access token**. A successful
 Cognito call alone does not prove that Quick has accepted the user's identity.
 Do not swap token fields to address a later service error.
 
+When deliberately testing an incorrect PKCE verifier, Cognito can return HTTP 400
+`invalid_request`. Record the actual error code and verify that no tokens are
+returned, alongside a successful exchange with a fresh code and correct verifier.
+Do not require every rejected token request to use the error name `invalid_grant`.
+
+For a missing invitation, follow the setup guide's
+[invitation recovery steps](docs/SETUP.md#if-the-cognito-invitation-is-missing).
+The Cognito invitation contains a separate password from Identity Center.
+
 ## Correlate customer logs without collecting tokens
 
 Ask for the Desktop version, UTC failure time, selected Quick account, displayed error, and the

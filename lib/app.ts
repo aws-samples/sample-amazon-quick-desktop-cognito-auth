@@ -185,7 +185,7 @@ const stack = new QuickDesktopAuthStack(app, 'QuickDesktopCognitoIdcStack', {
 });
 
 // The distribution cannot be created before the web ACL it references.
-if (wafStack) stack.addDependency(wafStack);
+if (wafStack) stack.addStackDependency(wafStack);
 
 for (const target of [stack, wafStack]) {
   if (!target) continue;

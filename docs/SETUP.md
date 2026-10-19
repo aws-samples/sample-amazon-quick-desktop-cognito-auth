@@ -56,6 +56,11 @@ and provision the first Quick administrator/user before continuing. Open
 using your organization's identity and subscription settings. This CDK stack
 does not create the subscription or assign Quick users.
 
+If the new Quick account will use Identity Center, prepare the instance, users,
+and administrator group in step 2.1 **before** creating the Quick subscription,
+then select that instance during signup. Quick's authentication method cannot be
+changed after account creation. See [Quick with Identity Center](https://docs.aws.amazon.com/quick/latest/userguide/setting-up-sso.html).
+
 Sign in to the **Quick web application as a Quick administrator**. An AWS IAM
 console session alone may show only restricted administration sections. If the
 banner below appears, choose **Quick Sign In** and complete Quick sign-in.
@@ -78,6 +83,10 @@ For **mode B**, open IAM Identity Center in the intended AWS account and Region.
 
 1. Use the directory instance your organization already manages. If none exists,
    have your identity administrator enable the appropriate instance first.
+   For an isolated trial in a single AWS account, Quick supports an
+   [account instance](https://docs.aws.amazon.com/singlesignon/latest/userguide/account-instances-identity-center.html)
+   where account-instance creation is permitted. The sample can use either an
+   account or organization instance visible to its deployment credentials.
 2. In **Groups**, create or select a group, for example `QuickUsers`.
 3. Add the test user to that group. Their Identity Center email must exactly
    match their active Quick email.
@@ -90,6 +99,10 @@ The stack can create a missing group, but it does not create Identity Center
 users or add members to that group. It imports existing members after deployment.
 Adding someone to the sync group alone does not grant a Quick subscription or
 role; their Quick access must also be provisioned.
+
+In the AWS access portal, open **Applications** and select the Quick account.
+An account instance can show no entries under **Accounts**; it does not provide
+AWS account permission sets.
 
 ### 2.2 Open a Bash terminal
 
@@ -175,6 +188,8 @@ If access is denied, have the AWS administrator check this regional setting
 before proceeding. In mode B, also check whether an existing management-event
 trail should be reused with `-c createTrail=false`; see the
 [configuration reference](CONFIGURATION.md#account-and-region-constraints).
+Reuse a trail only after confirming it is actively logging the relevant Identity
+Center management events in the instance's primary Region.
 
 **Checkpoint:** AWS account, authentication Region, and mode are selected.
 All following CDK commands include the same `"${CDK_OPTIONS[@]}"`.
@@ -200,7 +215,7 @@ bootstrap if your usual deployment role cannot create those resources.
 
 ```bash
 npx cdk synth --all "${CDK_OPTIONS[@]}"
-npx cdk diff --all "${CDK_OPTIONS[@]}"
+npx cdk diff "${CDK_OPTIONS[@]}"
 
 mkdir -p .local
 npx cdk deploy --all "${CDK_OPTIONS[@]}" \
@@ -210,6 +225,9 @@ npx cdk deploy --all "${CDK_OPTIONS[@]}" \
 Review the proposed resources and IAM changes. Answer the CDK approval prompt
 only after reviewing the changes. Wait for deployment to finish; CloudFront can
 take several minutes.
+
+With no stack selector, `cdk diff` compares both stacks. The `--all` option is
+used by `cdk deploy`, not `cdk diff`.
 
 `--all` deploys both stacks in the right order:
 
@@ -404,6 +422,45 @@ instead of manually creating a competing Cognito user with the same email.
 Cognito pool with the matching verified email, and has their Cognito invitation.
 For missing email, check spam/quarantine and Cognito email delivery settings.
 
+### If the Cognito invitation is missing
+
+Look for **Your Amazon Quick Desktop invitation** at the email stored on the
+Cognito user. It contains a separate temporary Cognito password; the Identity
+Center activation or password-reset email cannot be used in its place. A sync
+log with `action=created` confirms that Cognito accepted user creation, not that
+the message reached the inbox. Reconciliation does not repeatedly invite an
+existing user.
+
+After checking spam/quarantine and email delivery settings, an administrator can
+resend an invitation for a user who has not completed first sign-in. Copy the
+**existing Cognito username** from the pool's Users list; in Identity Center mode
+it is the directory user ID. Resending generates a new temporary password and
+restarts its validity period, so use the latest invitation.
+
+```bash
+POOL_ID=$(aws cloudformation describe-stacks \
+  --region "$AWS_REGION" \
+  --stack-name QuickDesktopCognitoIdcStack \
+  --query "Stacks[0].Outputs[?OutputKey=='PoolId'].OutputValue | [0]" \
+  --output text)
+COGNITO_USERNAME=REPLACE_WITH_EXISTING_COGNITO_USERNAME
+COGNITO_STATUS=$(aws cognito-idp admin-get-user \
+  --region "$AWS_REGION" --user-pool-id "$POOL_ID" \
+  --username "$COGNITO_USERNAME" --query UserStatus --output text)
+
+if [ "$COGNITO_STATUS" = "FORCE_CHANGE_PASSWORD" ]; then
+  aws cognito-idp admin-create-user \
+    --region "$AWS_REGION" --user-pool-id "$POOL_ID" \
+    --username "$COGNITO_USERNAME" \
+    --message-action RESEND --desired-delivery-mediums EMAIL \
+    --query 'User.{Username:Username,Status:UserStatus}' --output table
+else
+  echo "No invitation resent. Check the user status; use password recovery after first sign-in."
+fi
+```
+
+Do not create another user with the same email to recover a missing invitation.
+
 ## 7. Install Desktop and complete the first sign-in
 
 ### 7.1 Download and install
@@ -437,6 +494,12 @@ The browser first identifies the Quick account using its web session. If it
 asks you to sign in to Quick, do so using that account's normal sign-in method.
 It then redirects to the Cognito login page. This initial Quick web sign-in is
 expected, even though Cognito handles the subsequent Desktop authentication.
+
+If Quick uses Identity Center, its password and MFA policy apply to this initial
+web sign-in. Cognito has its own password and MFA settings. The stack's
+`mfaRequired` option controls only Cognito; it does not change Identity Center's
+MFA policy. The default requires Cognito TOTP MFA; `mfaRequired=false` makes it
+optional.
 
 ### 7.3 Complete Cognito password and MFA setup
 

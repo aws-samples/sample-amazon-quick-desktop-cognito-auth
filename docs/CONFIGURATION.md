@@ -194,6 +194,10 @@ npm run build
 Python 3.12 and the virtual environment are needed for these tests; customers do
 not need them to deploy the prepackaged Python Lambda source with CDK.
 
+The development requirements pin both Boto3 and Botocore so the stubbed responses
+are validated against a reproducible service model. When upgrading the SDK, keep
+the Identity Center response fixtures in sync with its required metadata fields.
+
 `npm test` exercises scope filtering, token forwarding, origin checks, metadata
 readiness, safe diagnostics, directory synchronization with AWS SDK stubbed
 responses, and synthesized infrastructure assertions. Tests use dummy credentials

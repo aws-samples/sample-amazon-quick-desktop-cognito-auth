@@ -57,6 +57,11 @@ Quick Enterprise 계정이 없다면 먼저 관리자가 구독을 생성하고 
 조직의 자격 증명 및 구독 정책에 따라 계정 설정을 완료하세요.
 이 CDK 스택은 Quick 구독을 생성하거나 Quick 사용자를 할당하지 않습니다.
 
+새 Quick 계정에서 Identity Center를 사용할 경우, Quick 구독을 생성하기 **전에**
+2.1단계의 인스턴스, 사용자, 관리자 그룹을 먼저 준비한 다음 가입 과정에서 해당
+인스턴스를 선택하세요. Quick 계정을 생성한 후에는 인증 방식을 변경할 수 없습니다.
+[Quick과 Identity Center 구성](https://docs.aws.amazon.com/quick/latest/userguide/setting-up-sso.html)을 참고하세요.
+
 **Quick 관리자 사용자로 Quick 웹 애플리케이션에 로그인**하세요. AWS IAM 콘솔 세션으로만
 접근하면 일부 관리 메뉴만 표시될 수 있습니다. 아래 배너가 보이면 **Quick Sign In**을
 선택하여 Quick 로그인을 완료하세요.
@@ -79,6 +84,10 @@ Quick Enterprise 계정이 없다면 먼저 관리자가 구독을 생성하고 
 
 1. 조직에서 이미 관리하는 디렉터리 인스턴스를 사용하세요. 없다면 먼저 자격 증명 관리자에게
    적절한 인스턴스 활성화를 요청합니다.
+   단일 AWS 계정에서 격리된 평가를 진행한다면, 생성이 허용된 환경에서 Quick이 지원하는
+   [계정 인스턴스](https://docs.aws.amazon.com/singlesignon/latest/userguide/account-instances-identity-center.html)를
+   사용할 수 있습니다. 이 샘플은 배포 자격 증명으로 조회할 수 있는 계정 인스턴스와
+   조직 인스턴스를 모두 사용할 수 있습니다.
 2. **Groups**에서 그룹을 생성하거나 선택합니다. 예제 그룹 이름은 `QuickUsers`입니다.
 3. 테스트 사용자를 그룹에 추가합니다. 사용자의 Identity Center 이메일은 활성 Quick 사용자의
    이메일과 정확하게 일치해야 합니다.
@@ -91,6 +100,10 @@ Quick Enterprise 계정이 없다면 먼저 관리자가 구독을 생성하고 
 사용자를 추가하지는 않습니다. 배포 후 기존 그룹 구성원을 가져와 Cognito에 등록합니다.
 동기화 그룹에 추가하는 것만으로 Quick 구독이나 역할이 부여되지는 않으므로,
 해당 사용자의 Quick 접근 권한도 별도로 준비해야 합니다.
+
+AWS 액세스 포털에서는 **Applications**를 열고 Quick 계정을 선택하세요.
+계정 인스턴스는 AWS 계정용 권한 세트를 제공하지 않으므로 **Accounts** 탭이
+비어 있어도 정상입니다.
 
 ### 2.2 Bash 터미널 열기
 
@@ -176,6 +189,9 @@ CDK_OPTIONS+=(-c apiGatewayAccountRole=false)
 확인합니다. 자세한 내용은 [설정 참고 문서](CONFIGURATION.md#account-and-region-constraints)를
 참고하세요.
 
+기존 추적을 재사용하기 전에 해당 인스턴스의 기본 리전에서 필요한 Identity Center
+관리 이벤트를 실제로 로깅하고 있는지 확인하세요.
+
 **확인:** AWS 계정, 인증 리전, 배포 모드가 선택되어 있어야 합니다.
 이후 모든 CDK 명령에 동일한 `"${CDK_OPTIONS[@]}"`를 포함합니다.
 bootstrap 명령에도 필요합니다. 애플리케이션은 `useIdc=false`를 지정하지 않으면
@@ -200,7 +216,7 @@ CDK 배포에 필요한 리소스를 준비하는 단계입니다. 평소 사용
 
 ```bash
 npx cdk synth --all "${CDK_OPTIONS[@]}"
-npx cdk diff --all "${CDK_OPTIONS[@]}"
+npx cdk diff "${CDK_OPTIONS[@]}"
 
 mkdir -p .local
 npx cdk deploy --all "${CDK_OPTIONS[@]}" \
@@ -209,6 +225,9 @@ npx cdk deploy --all "${CDK_OPTIONS[@]}" \
 
 생성 또는 변경될 리소스와 IAM 권한을 검토한 후 CDK 승인 프롬프트에 응답하세요.
 배포가 완료될 때까지 기다립니다. CloudFront 배포에는 몇 분 정도 걸릴 수 있습니다.
+
+스택 선택 인수를 생략한 `cdk diff`는 두 스택을 모두 비교합니다. `--all` 옵션은
+`cdk diff`가 아닌 `cdk deploy`에 사용합니다.
 
 `--all`은 다음 두 스택을 필요한 순서대로 배포합니다.
 
@@ -398,6 +417,44 @@ Identity Center 초대와 Cognito 초대는 별개입니다. Identity Center 비
 등록되어 있으며, Cognito 초대 메일을 받아야 합니다. 메일이 없다면 스팸함, 메일 격리 및
 Cognito 이메일 전송 설정을 확인하세요.
 
+### Cognito 초대 메일이 없는 경우
+
+Cognito 사용자에 저장된 이메일 주소에서 **Your Amazon Quick Desktop invitation**을
+찾으세요. 이 메일에는 별도의 Cognito 임시 비밀번호가 들어 있습니다. Identity Center
+활성화 또는 비밀번호 재설정 메일로 대신할 수 없습니다. 동기화 로그의 `action=created`는
+Cognito가 사용자 생성 요청을 수락했다는 의미이며, 메일함 도착을 보장하지는 않습니다.
+동기화 작업은 이미 존재하는 사용자에게 초대를 반복해서 보내지 않습니다.
+
+스팸함, 메일 격리 및 이메일 전송 설정을 확인한 후에도 메일이 없다면, 관리자는 아직
+첫 로그인을 완료하지 않은 사용자에게 초대를 다시 보낼 수 있습니다. 풀의 Users 목록에서
+**기존 Cognito 사용자 이름**을 복사하세요. Identity Center 모드에서는 디렉터리 사용자 ID입니다.
+초대를 다시 보내면 새 임시 비밀번호가 생성되고 유효기간도 다시 시작되므로,
+가장 최근 초대 메일을 사용하세요.
+
+```bash
+POOL_ID=$(aws cloudformation describe-stacks \
+  --region "$AWS_REGION" \
+  --stack-name QuickDesktopCognitoIdcStack \
+  --query "Stacks[0].Outputs[?OutputKey=='PoolId'].OutputValue | [0]" \
+  --output text)
+COGNITO_USERNAME=REPLACE_WITH_EXISTING_COGNITO_USERNAME
+COGNITO_STATUS=$(aws cognito-idp admin-get-user \
+  --region "$AWS_REGION" --user-pool-id "$POOL_ID" \
+  --username "$COGNITO_USERNAME" --query UserStatus --output text)
+
+if [ "$COGNITO_STATUS" = "FORCE_CHANGE_PASSWORD" ]; then
+  aws cognito-idp admin-create-user \
+    --region "$AWS_REGION" --user-pool-id "$POOL_ID" \
+    --username "$COGNITO_USERNAME" \
+    --message-action RESEND --desired-delivery-mediums EMAIL \
+    --query 'User.{Username:Username,Status:UserStatus}' --output table
+else
+  echo "No invitation resent. Check the user status; use password recovery after first sign-in."
+fi
+```
+
+초대 메일을 받지 못했다는 이유로 같은 이메일의 사용자를 새로 생성하지 마세요.
+
 ## 7. Desktop 설치 및 첫 로그인
 
 ### 7.1 다운로드 및 설치
@@ -429,6 +486,11 @@ Windows에서는 설치 프로그램을 실행하고 안내를 따릅니다.
 기존 로그인 방식으로 로그인하세요. 이후 Cognito 로그인 페이지로 이동합니다.
 Desktop 인증 자체는 Cognito가 처리하지만, 그 전에 Quick 웹 로그인이 나타나는 것은
 정상적인 흐름입니다.
+
+Quick이 Identity Center를 사용한다면 이 초기 웹 로그인에는 Identity Center의 비밀번호와
+MFA 정책이 적용됩니다. Cognito의 비밀번호와 MFA 설정은 별도입니다. 스택의 `mfaRequired`
+옵션은 Cognito에만 적용되며 Identity Center의 MFA 정책을 변경하지 않습니다.
+기본값은 Cognito TOTP MFA 필수이며, `mfaRequired=false`로 설정하면 선택 사항이 됩니다.
 
 ### 7.3 Cognito 비밀번호 및 MFA 설정
 
