@@ -214,7 +214,7 @@ bootstrap if your usual deployment role cannot create those resources.
 ### 3.2 Review and deploy
 
 ```bash
-npx cdk synth --all "${CDK_OPTIONS[@]}"
+npx cdk synth "${CDK_OPTIONS[@]}"
 npx cdk diff "${CDK_OPTIONS[@]}"
 
 mkdir -p .local
@@ -226,8 +226,8 @@ Review the proposed resources and IAM changes. Answer the CDK approval prompt
 only after reviewing the changes. Wait for deployment to finish; CloudFront can
 take several minutes.
 
-With no stack selector, `cdk diff` compares both stacks. The `--all` option is
-used by `cdk deploy`, not `cdk diff`.
+With no stack selector, `cdk synth` synthesizes both stacks and `cdk diff`
+compares both stacks. Use `--all` with `cdk deploy`.
 
 `--all` deploys both stacks in the right order:
 

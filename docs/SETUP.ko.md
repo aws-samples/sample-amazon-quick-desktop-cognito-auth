@@ -215,7 +215,7 @@ CDK 배포에 필요한 리소스를 준비하는 단계입니다. 평소 사용
 ### 3.2 변경 사항 검토 및 배포
 
 ```bash
-npx cdk synth --all "${CDK_OPTIONS[@]}"
+npx cdk synth "${CDK_OPTIONS[@]}"
 npx cdk diff "${CDK_OPTIONS[@]}"
 
 mkdir -p .local
@@ -226,8 +226,8 @@ npx cdk deploy --all "${CDK_OPTIONS[@]}" \
 생성 또는 변경될 리소스와 IAM 권한을 검토한 후 CDK 승인 프롬프트에 응답하세요.
 배포가 완료될 때까지 기다립니다. CloudFront 배포에는 몇 분 정도 걸릴 수 있습니다.
 
-스택 선택 인수를 생략한 `cdk diff`는 두 스택을 모두 비교합니다. `--all` 옵션은
-`cdk diff`가 아닌 `cdk deploy`에 사용합니다.
+스택 선택 인수를 생략하면 `cdk synth`는 두 스택을 모두 합성하고, `cdk diff`는
+두 스택을 모두 비교합니다. `--all` 옵션은 `cdk deploy`에 사용합니다.
 
 `--all`은 다음 두 스택을 필요한 순서대로 배포합니다.
 
